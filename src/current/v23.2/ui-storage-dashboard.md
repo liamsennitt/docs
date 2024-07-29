@@ -9,6 +9,8 @@ The **Storage** dashboard lets you monitor the storage utilization of your clust
 
 To view this dashboard, [access the DB Console]({% link {{ page.version.version }}/ui-overview.md %}#db-console-access), click **Metrics** in the left-hand navigation, and select **Dashboard** > **Storage**.
 
+## Dashboard navigation
+
 {% include {{ page.version.version }}/ui/ui-metrics-navigation.md %}
 
 The **Storage** dashboard displays the following time series graphs:
@@ -26,6 +28,8 @@ Metric | Description
 **Used** | The disk space in use by CockroachDB data. This excludes the Cockroach binary, operating system, and other system files.
 
 {% include {{ page.version.version }}/prod-deployment/healthy-storage-capacity.md %}
+
+{% include {{page.version.version}}/storage/free-up-disk-space.md %}
 
 ### Capacity metrics
 

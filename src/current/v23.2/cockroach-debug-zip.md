@@ -18,15 +18,23 @@ The files produced by `cockroach debug zip` can contain highly [sensitive, perso
 
 ### Use cases
 
+{{site.data.alerts.callout_danger}}
+ `cockroach debug zip` is an expensive operation and impacts cluster performance.
+
+Only use this command as an emergency measure under the guidance of Cockroach Labs.
+
+Particularly fetching stack traces for all goroutines is a "stop-the-world" operation, which can momentarily but significantly increase SQL service latency. Exclude these goroutine stacks by using the [`--include-goroutine-stacks=false` flag](#include-goroutine-stacks).
+{{site.data.alerts.end}}
+
 There are two scenarios in which `debug zip` is useful:
+
+- If you experience severe or difficult-to-reproduce issues with your cluster, Cockroach Labs might ask you to send us your cluster's debugging information using `cockroach debug zip`. We recommend reducing the `*.zip` file size by only [retrieving debugging information for the relevant time range](#generate-a-debug-zip-file-for-a-time-range) of the issue by using the `--files-from`, and/or `--files-until` [flags](#flags).
 
 - To collect all of your nodes' logs, which you can then parse to locate issues. You can optionally use the [flags](#flags) to [retrieve only the log files](#generate-a-debug-zip-file-with-logs-only). For more information about logs, see [Logging]({% link {{ page.version.version }}/logging-overview.md %}). Also note:
 
     - Nodes that are currently [down]({% link {{ page.version.version }}/cluster-setup-troubleshooting.md %}#node-liveness-issues) cannot deliver their logs over the network. For these nodes, you must log on to the machine where the `cockroach` process would otherwise be running, and gather the files manually.
 
     - Nodes that are currently up but disconnected from other nodes (e.g., because of a [network partition]({% link {{ page.version.version }}/cluster-setup-troubleshooting.md %}#network-partition)) may not be able to respond to `debug zip` requests forwarded by other nodes, but can still respond to requests for data when asked directly. In such situations, we recommend using the [`--host` flag](#client-connection) to point `debug zip` at each of the disconnected nodes until data has been gathered for the entire cluster.
-
-- If you experience severe or difficult-to-reproduce issues with your cluster, Cockroach Labs might ask you to send us your cluster's debugging information using `cockroach debug zip`.
 
 ### Files
 
@@ -72,7 +80,6 @@ The following information is also contained in the `.zip` file, and cannot be fi
 - [Cluster Settings]({% link {{ page.version.version }}/cluster-settings.md %})
 - [Metrics]({% link {{ page.version.version }}/metrics.md %})
 - [Replication Reports]({% link {{ page.version.version }}/query-replication-reports.md %})
-- Problem ranges
 - CPU profiles
 - A script (`hot-ranges.sh`) that summarizes the hottest ranges (ranges receiving a high number of reads or writes)
 
@@ -98,13 +105,16 @@ The `debug zip` subcommand supports the following [general-use](#general), [clie
 
 Flag | Description
 -----|-----------
-`--cpu-profile-duration` | Fetch CPU profiles from the cluster with the specified sample duration in seconds. The `debug zip` command will block for the duration specified. A value of `0` disables this feature.<br /><br />**Default:** `5`
+`--cpu-profile-duration` | Fetch CPU profiles from the cluster with the specified sample duration in seconds. The `debug zip` command will block for the duration specified. A value of `0` disables this feature.<br /><br />**Default:** `5s`
 `--concurrency` | The maximum number of nodes to concurrently poll for data. This can be any value between `1` and `15`.
 `--exclude-files` | [Files](#files) to exclude from the generated `.zip`. This can be used to limit the size of the generated `.zip`, and affects logs, heap profiles, goroutine dumps, and/or CPU profiles. The files are specified as a comma-separated list of [glob patterns](https://wikipedia.org/wiki/Glob_(programming)). For example:<br /><br />`--exclude-files=*.log`<br /><br />Note that this flag is applied _after_ `--include_files`. Use [`cockroach debug list-files`]({% link {{ page.version.version }}/cockroach-debug-list-files.md %}) with this flag to see a list of files that will be contained in the `.zip`.
 `--exclude-nodes` | Specify nodes to exclude from inspection as a comma-separated list or range of node IDs. For example:<br /><br />`--exclude-nodes=1,10,13-15`
 `--files-from` | Start timestamp for log file, goroutine dump, and heap profile collection. This can be used to limit the size of the generated `.zip`, which is increased by these files. The timestamp uses the format `YYYY-MM-DD`, followed optionally by `HH:MM:SS` or `HH:MM`. For example:<br /><br />`--files-from='2021-07-01 15:00'`<br /><br />When specifying a narrow time window, we recommend adding extra seconds/minutes to account for uncertainties such as clock drift.<br /><br />**Default:** 48 hours before now
 `--files-until` | End timestamp for log file, goroutine dump, and heap profile collection. This can be used to limit the size of the generated `.zip`, which is increased by these files. The timestamp uses the format `YYYY-MM-DD`, followed optionally by `HH:MM:SS` or `HH:MM`. For example:<br /><br />`--files-until='2021-07-01 16:00'`<br /><br />When specifying a narrow time window, we recommend adding extra seconds/minutes to account for uncertainties such as clock drift.<br /><br />**Default:** 24 hours beyond now (to include files created during `.zip` creation)
 `--include-files` | [Files](#files) to include in the generated `.zip`. This can be used to limit the size of the generated `.zip`, and affects logs, heap profiles, goroutine dumps, and/or CPU profiles. The files are specified as a comma-separated list of [glob patterns](https://wikipedia.org/wiki/Glob_(programming)). For example:<br /><br />`--include-files=*.pprof`<br /><br />Note that this flag is applied _before_ `--exclude-files`. Use [`cockroach debug list-files`]({% link {{ page.version.version }}/cockroach-debug-list-files.md %}) with this flag to see a list of files that will be contained in the `.zip`.
+<a name="include-goroutine-stacks"></a>`--include-goroutine-stacks` | Fetch stack traces for all goroutines running on each targeted node in `nodes/*/stacks.txt` and `nodes/*/stacks_with_labels.txt` files. Note that fetching stack traces for all goroutines is a "stop-the-world" operation, which can momentarily have negative impacts on SQL service latency. Exclude these goroutine stacks by using the `--include-goroutine-stacks=false` flag. Note that any periodic goroutine dumps previously taken on the node will still be included in `nodes/*/goroutines/*.txt.gz`, as these would have already been generated and don't require any additional stop-the-world operations to be collected.<br /><br />**Default:** true
+`--include-range-info` | Include one file per node with information about the KV ranges stored on that node, in `nodes/{node ID}/ranges.json`.<br /><br />This information can be vital when debugging issues that involve the [KV layer]({% link {{ page.version.version }}/architecture/overview.md %}#layers) (which includes everything below the SQL layer), such as data placement, load balancing, performance or other behaviors. In certain situations, on large clusters with large numbers of ranges, these files can be omitted if and only if the issue being investigated is already known to be in another layer of the system (for example, an error message about an unsupported feature or incompatible value in a SQL schema change or statement). However, many higher-level issues are ultimately related to the underlying KV layer described by these files. Only set this to `false` if directed to do so by Cockroach Labs support.<br /><br />In addition, include problem ranges information in `reports/problemranges.json`.<br /><br />**Default:** true
+`--include-running-job-traces` | Include information about each running, traceable job (such as [backup]({% link {{ page.version.version }}/backup.md %}), [restore]({% link {{ page.version.version }}/restore.md %}), [import]({% link {{ page.version.version }}/import-into.md %}), [physical cluster replication]({% link {{ page.version.version }}/physical-cluster-replication-technical-overview.md %})) in `jobs/*/*/trace.zip` files. This involves collecting cluster-wide traces for each running job in the cluster.<br /><br />**Default:** true
 `--nodes` | Specify nodes to inspect as a comma-separated list or range of node IDs. For example:<br /><br />`--nodes=1,10,13-15`
 `--redact` | Redact sensitive data from the generated `.zip`, with the exception of range keys, which must remain unredacted because they are essential to support CockroachDB. This flag replaces the deprecated `--redact-logs` flag, which only applied to log messages contained within `.zip`. See [Redact sensitive information](#redact-sensitive-information) for an example.
 `--redact-logs` | **Deprecated** Redact sensitive data from collected log files only. Use the `--redact` flag instead, which redacts sensitive data across the entire generated `.zip` as well as the collected log files. Passing the `--redact-logs` flag will be interpreted as the `--redact` flag.
@@ -147,6 +157,15 @@ $ cockroach debug zip ./cockroach-data/logs/debug.zip --host=200.100.50.25
 {{site.data.alerts.callout_info}}
 Secure examples assume you have the appropriate certificates in the default certificate directory, `${HOME}/.cockroach-certs/`.
 {{site.data.alerts.end}}
+
+### Generate a debug zip file for a time range
+
+Generate a debug zip file containing only debugging information for a specified time range:
+
+{% include_cached copy-clipboard.html %}
+~~~ shell
+$ cockroach debug zip ./cockroach-data/logs/debug.zip --files-from='2023-10-03 13:30' --files-until='2023-10-03 14:30'
+~~~
 
 ### Generate a debug zip file with logs only
 

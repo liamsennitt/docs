@@ -9,6 +9,8 @@ The **TTL** dashboard lets you monitor the progress and performance of [batch de
 
 To view this dashboard, [access the DB Console]({% link {{ page.version.version }}/ui-overview.md %}#db-console-access), click **Metrics** in the left-hand navigation, and select **Dashboard** > **TTL**.
 
+## Dashboard navigation
+
 {% include {{page.version.version}}/ui/ui-metrics-navigation.md %}
 
 The **TTL** dashboard displays the following time series graphs:
@@ -21,7 +23,7 @@ You can monitor the **Processing Rate** graph to see how many rows per second ar
 
 | Metric        | Description                                 |
 |---------------+---------------------------------------------|
-| rows selected | The number of rows selected by the TTL job. |
+| rows selected | The number of rows selected for deletion by the TTL job. |
 | rows deleted  | The number of rows deleted by the TTL job.  |
 
 ## Estimated Rows

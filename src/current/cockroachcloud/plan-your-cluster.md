@@ -22,6 +22,10 @@ Some of a CockroachDB {{ site.data.products.dedicated }} cluster's provisioned R
 
 CockroachDB {{ site.data.products.dedicated }} clusters use three Availability Zones (AZs). For balanced data distribution and best performance, we recommend using a number of nodes that is a multiple of 3 (for example, 3, 6, or 9 nodes per region).
 
+{{site.data.alerts.callout_info}}
+You cannot scale a multi-node cluster down to a single-node cluster. If you need to scale down to a single-node cluster, [back up]({% link cockroachcloud/take-and-restore-customer-owned-backups.md %}) your cluster and [restore]({% link cockroachcloud/take-and-restore-customer-owned-backups.md %}) it into a new single-node cluster.
+{{site.data.alerts.end}}
+
 #### CockroachDB {{ site.data.products.dedicated }} advanced
 
 You should choose CockroachDB {{ site.data.products.dedicated }} advanced if your cluster needs access to all features required for [PCI readiness](https://www.cockroachlabs.com/docs/{{site.current_cloud_version}}/security-reference/security-overview). CockroachDB {{ site.data.products.dedicated }} advanced clusters have all the features of CockroachDB {{ site.data.products.dedicated }} standard clusters plus these security features.
@@ -35,10 +39,6 @@ Each region of a multi-region cluster must contain at least 3 nodes to ensure th
 You can have a maximum of 9 regions per cluster through the Console. If you need to add more regions, [contact us](https://support.cockroachlabs.com).
 
 ### Cluster scaling
-
-{{site.data.alerts.callout_info}}
-The ability to add and remove regions from a cluster through the Console is temporarily disabled. If you need to do this, [contact support](https://support.cockroachlabs.com).
-{{site.data.alerts.end}}
 
 When scaling up your cluster, it is generally more effective to increase node size up to 16 vCPUs before adding more nodes. For example, if you have a 3 node cluster with 2 vCPUs per node, consider scaling up to 8 vCPUs before adding a fourth node. For most production applications, we recommend at least 4 to 8 vCPUs per node.
 

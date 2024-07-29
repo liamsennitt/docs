@@ -52,6 +52,7 @@ To emit different properties for a row, specify the following explicitly in CDC 
 ## Limitations
 
 {% include {{ page.version.version }}/known-limitations/cdc-queries.md %}
+- {% include {{ page.version.version }}/known-limitations/alter-changefeed-cdc-queries.md %}
 
 ## CDC query function support
 
@@ -188,6 +189,67 @@ For newly inserted rows in a table, the `cdc_prev` column will emit as `NULL`.
 If you do not need to select specific columns in a table or filter rows from a changefeed, you can instead create a changefeed using the [`diff` option]({% link {{ page.version.version }}/create-changefeed.md %}#diff-opt) to emit a `before` field with each message. This field includes the value of the row before the update was applied.
 {{site.data.alerts.end}}
 
+### Reference TTL in a CDC query
+
+In CockroachDB, table row deletes occur as a result of [regular SQL transactions]({% link {{ page.version.version }}/delete-data.md %}) or through [row-level TTL]({% link {{ page.version.version }}/row-level-ttl.md %}). When your changefeed emits [delete event messages]({% link {{ page.version.version }}/changefeed-messages.md %}#delete-messages), you may need to distinguish between these two types of deletion. For example, only emitting messages for row-level TTL deletes from your changefeed.
+
+If you have TTL logic defined with [`ttl_expiration_expression`](#ttl_expiration_expression) or [`ttl_expire_after`](#ttl_expire_after), you can leverage CDC queries to determine whether or not a given row was expired at the time of the changefeed event, including a delete event.
+
+{{site.data.alerts.callout_info}}
+{% include {{page.version.version}}/sql/row-level-ttl-prefer-ttl-expiration-expressions.md %}
+
+For more detail, refer to the [Batch Delete Expire Data with Row-Level TTL]({% link {{ page.version.version }}/row-level-ttl.md %}) page.
+{{site.data.alerts.end}}
+
+#### `ttl_expiration_expression`
+
+In some cases, you may have custom expiration logic on rows in a table. You can also write a CDC query to emit rows that have deleted through row-level TTL using a custom TTL expression.
+
+In the following example, the table uses the [`ttl_expiration_expression`]({% link {{ page.version.version }}/row-level-ttl.md %}#syntax-overview) storage parameter to reference the `expired_at` column. To create a changefeed on this table to explicitly emit the previous state of the row for TTL deletions:
+
+{% include_cached copy-clipboard.html %}
+~~~ sql
+CREATE CHANGEFEED INTO 'external://sink'
+AS SELECT cdc_prev FROM ttl_test_per_row
+WHERE event_op() = 'delete'
+AND (cdc_prev).expired_at < statement_timestamp();
+~~~
+
+For the `CREATE TABLE` statement and further details on `ttl_expiration_expression`, refer to [Using `ttl_expiration_expression`]({% link {{ page.version.version }}/row-level-ttl.md %}#using-ttl_expiration_expression).
+
+#### `ttl_expire_after`
+
+When the table uses the `ttl_expire_after` storage parameter, you can emit rows that were deleted after expiring from the changefeed with syntax similar to:
+
+{% include_cached copy-clipboard.html %}
+~~~sql
+CREATE CHANGEFEED INTO 'external://sink'
+AS SELECT cdc_prev FROM test_table
+WHERE event_op() = 'delete'
+AND (cdc_prev).crdb_internal_expiration < statement_timestamp();
+~~~
+
+This changefeed statement:
+
+- Accesses the `cdc_prev` column for the previous state of the row.
+- Searches for `delete` events in that previous state.
+- Finds the TTL expiration timestamp of the deleted rows where it is earlier than the current statement timestamp.
+
+For the `CREATE TABLE` statement and further details on `ttl_expire_after`, refer to [Using `ttl_expire_after`]({% link {{ page.version.version }}/row-level-ttl.md %}#using-ttl_expire_after).
+
+{{site.data.alerts.callout_info}}
+This will only emit rows that were deleted **after** expiring. Furthermore, consider that a [transactional SQL delete]({% link {{ page.version.version }}/delete-data.md %}) during the window between the row expiring and the TTL job running will also cause this message to emit from the changefeed.
+{{site.data.alerts.end}}
+
+Equally, you can remove the delete messages for expired rows so that they do not emit from your changefeed:
+
+{% include_cached copy-clipboard.html %}
+~~~ sql
+CREATE CHANGEFEED AS SELECT cdc_prev FROM test_table
+WHERE NOT (event_op() = 'delete'
+AND (cdc_prev).crdb_internal_expiration < statement_timestamp());
+~~~
+
 ### Geofilter a changefeed
 
 When you are working with a [`REGIONAL BY ROW` table]({% link {{ page.version.version }}/alter-table.md %}#regional-by-row), you can filter the changefeed on the `crdb_region` column to create a region-specific changefeed:
@@ -319,7 +381,7 @@ The changefeed will return messages for the specified rows:
 {"city": "washington dc", "lat": 83, "long": 84, "ride_id": "efe6468e-f443-463f-a21c-4cb0f6ecf235", "timestamp": "2023-06-02T15:11:38.026542"}
 ~~~
 
-The output will only include the row's history that has been changed within the [garbage collection window]({% link {{ page.version.version }}/architecture/storage-layer.md %}#garbage-collection). If the change occurred outside of the garbage collection window, it will not be returned as part of this output. See [Garbage collection and changefeeds]({% link {{ page.version.version }}/changefeed-messages.md %}#garbage-collection-and-changefeeds) for more detail on how the garbage collection window interacts with changefeeds.
+The output will only include the row's history that has been changed within the [garbage collection window]({% link {{ page.version.version }}/architecture/storage-layer.md %}#garbage-collection). If the change occurred outside of the garbage collection window, it will not be returned as part of this output. See [Garbage collection and changefeeds]({% link {{ page.version.version }}/protect-changefeed-data.md %}) for more detail on how the garbage collection window interacts with changefeeds.
 
 ### Customize changefeed messages
 
@@ -438,6 +500,12 @@ You can then use this function within a CDC query tagetting a table in the same 
 ~~~ sql
 CREATE CHANGEFEED INTO 'external://sink' AS SELECT rider_id, doubleRevenue(rides.revenue::int) FROM rides WHERE revenue < 30;
 ~~~
+
+### Video Demo
+
+For a demo on how to harness CDC Queries to filer and produce JSON events, watch the following video:
+
+{% include_cached youtube.html video_id="mea4czXi7tI" %}
 
 ## See also
 
