@@ -76,7 +76,7 @@ Property        | Description
 `sql cpu time` | The total amount of time spent in the [SQL layer]({% link {{ page.version.version }}/architecture/sql-layer.md %}). It does not include time spent in the [storage layer]({% link {{ page.version.version }}/architecture/storage-layer.md %}).
 `regions` | The [regions]({% link {{ page.version.version }}/show-regions.md %}) where the affected nodes were located.
 `max sql temp disk usage` | ([`DISTSQL`](#distsql-option) option only) How much disk spilling occurs when executing a query. This property is displayed only when the disk usage is greater than zero.
-`estimated RUs consumed` | The estimated number of [Request Units (RUs)](https://www.cockroachlabs.com/docs/cockroachcloud/plan-your-cluster-serverless#request-units) consumed by the statement. This property is visible only on CockroachDB {{ site.data.products.serverless }} clusters.
+`estimated RUs consumed` | The estimated number of [Request Units (RUs)]({% link cockroachcloud/plan-your-cluster-serverless.md %}#request-units) consumed by the statement. This property is visible only on CockroachDB {{ site.data.products.serverless }} clusters.
 
 ### Statement plan tree properties
 
@@ -212,6 +212,7 @@ EXPLAIN ANALYZE SELECT city, AVG(revenue) FROM rides GROUP BY city;
   execution time: 8ms
   distribution: full
   vectorized: true
+  plan type: custom
   rows decoded from KV: 500 (88 KiB, 1 gRPC calls)
   cumulative time spent in KV: 6ms
   maximum memory usage: 240 KiB
@@ -262,6 +263,7 @@ EXPLAIN ANALYZE SELECT * FROM vehicles JOIN rides ON rides.vehicle_id = vehicles
   execution time: 5ms
   distribution: local
   vectorized: true
+  plan type: custom
   rows decoded from KV: 515 (90 KiB, 2 gRPC calls)
   cumulative time spent in KV: 4ms
   maximum memory usage: 580 KiB
@@ -335,6 +337,7 @@ EXPLAIN ANALYZE (VERBOSE) SELECT city, AVG(revenue) FROM rides GROUP BY city;
   execution time: 5ms
   distribution: full
   vectorized: true
+  plan type: custom
   rows decoded from KV: 500 (88 KiB, 500 KVs, 1 gRPC calls)
   cumulative time spent in KV: 4ms
   maximum memory usage: 240 KiB
@@ -397,6 +400,7 @@ EXPLAIN ANALYZE (DISTSQL) SELECT city, AVG(revenue) FROM rides GROUP BY city;
   execution time: 4ms
   distribution: full
   vectorized: true
+  plan type: custom
   rows decoded from KV: 500 (88 KiB, 1 gRPC calls)
   cumulative time spent in KV: 3ms
   maximum memory usage: 240 KiB
@@ -475,6 +479,7 @@ EXPLAIN ANALYZE (REDACT) SELECT * FROM rides WHERE revenue > 90 ORDER BY revenue
   execution time: 6ms
   distribution: full
   vectorized: true
+  plan type: custom
   rows decoded from KV: 500 (88 KiB, 1 gRPC calls)
   cumulative time spent in KV: 4ms
   maximum memory usage: 280 KiB

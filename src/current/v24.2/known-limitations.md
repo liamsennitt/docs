@@ -26,9 +26,10 @@ This section describes limitations from previous CockroachDB versions that still
 
 CockroachDB supports the [PostgreSQL wire protocol](https://www.postgresql.org/docs/current/protocol.html) and the majority of its syntax. For a list of known differences in syntax and behavior between CockroachDB and PostgreSQL, see [Features that differ from PostgreSQL]({% link {{ page.version.version }}/postgresql-compatibility.md %}#features-that-differ-from-postgresql).
 
-#### `AS OF SYSTEM TIME` does not support placeholders
+#### `AS OF SYSTEM TIME` limitations
 
-CockroachDB does not support placeholders in [`AS OF SYSTEM TIME`]({% link {{ page.version.version }}/as-of-system-time.md %}). The time value must be embedded in the SQL string. [#30955](https://github.com/cockroachdb/cockroach/issues/30955)
+- {% include {{ page.version.version }}/known-limitations/aost-limitations.md %}
+- {% include {{ page.version.version }}/known-limitations/create-statistics-aost-limitation.md %}
 
 #### `COPY` syntax not supported by CockroachDB
 
@@ -192,8 +193,10 @@ It is currently not possible to [add a column]({% link {{ page.version.version }
 ~~~
 
 ~~~
-ERROR: nextval(): unimplemented: cannot evaluate scalar expressions containing sequence operations in this context
+ERROR: failed to construct index entries during backfill: nextval(): unimplemented: cannot evaluate scalar expressions containing sequence operations in this context
 SQLSTATE: 0A000
+HINT: You have attempted to use a feature that is not yet implemented.
+See: https://go.crdb.dev/issue-v/42508/v24.2
 ~~~
 
 [#42508](https://github.com/cockroachdb/cockroach/issues/42508)
@@ -447,7 +450,6 @@ Accessing the DB Console for a secure cluster now requires login information (i.
 {% include {{ page.version.version }}/known-limitations/physical-cluster-replication.md %}
 - {% include {{ page.version.version }}/known-limitations/pcr-scheduled-changefeeds.md %}
 - {% include {{ page.version.version }}/known-limitations/cutover-stop-application.md %}
-- {% include {{ page.version.version }}/known-limitations/fast-cutback-latest-timestamp.md %}
 
 #### `RESTORE` limitations
 
@@ -461,6 +463,10 @@ The [`COMMENT ON`]({% link {{ page.version.version }}/comment-on.md %}) statemen
 
 As a workaround, take a cluster backup instead, as the `system.comments` table is included in cluster backups. [#44396](https://github.com/cockroachdb/cockroach/issues/44396)
 
+#### `SHOW BACKUP` does not support symlinks for nodelocal
+
+{% include {{page.version.version}}/known-limitations/show-backup-symlink.md %}
+
 ### Change data capture
 
 Change data capture (CDC) provides efficient, distributed, row-level changefeeds into Apache Kafka for downstream processing such as reporting, caching, or full-text indexing. It has the following known limitations:
@@ -468,15 +474,13 @@ Change data capture (CDC) provides efficient, distributed, row-level changefeeds
 {% include {{ page.version.version }}/known-limitations/cdc.md %}
 - {% include {{ page.version.version }}/known-limitations/pcr-scheduled-changefeeds.md %}
 {% include {{ page.version.version }}/known-limitations/cdc-queries.md %}
+- {% include {{ page.version.version }}/known-limitations/cdc-queries-column-families.md %}
+- {% include {{ page.version.version }}/known-limitations/changefeed-column-family-message.md %}
 
 #### `ALTER CHANGEFEED` limitations
 
 {% include {{ page.version.version }}/known-limitations/alter-changefeed-limitations.md %}
 - {% include {{ page.version.version }}/known-limitations/alter-changefeed-cdc-queries.md %}
-
-### Physical cluster replication
-
-{% include {{ page.version.version }}/known-limitations/pcr-scheduled-changefeeds.md %}
 
 ### Performance optimization
 
