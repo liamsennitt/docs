@@ -149,12 +149,12 @@ The following releases and their descriptions represent proposed plans that are 
 {% capture experimental_download_js %}{% include_cached releases/experimental_download_dialog.md %}{% endcapture %}
 {% capture onclick_string %}onclick="{{ experimental_download_js }}"{% endcapture %}
 
+{% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+{% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+
 {% for v in versions %} {% comment %} Iterate through all major versions {% endcomment %}
 
-    {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
-    {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
-    {% if  outdated_releases contains v.major_version %}
-      <p style="font: red">{{ v.major_version }} MATCH</p>
+    {% if outdated_releases contains v.major_version %}
       {% continue %}
     {% endif %}
 
@@ -278,9 +278,7 @@ To learn what’s new in this release, refer to [Feature Highlights]({% link rel
     <tbody>
             {% for r in releases %}
 
-                {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
-                {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
-                {% if  outdated_releases contains v.major_version %}
+                {% if outdated_releases contains v.major_version %}
                   {% continue %}
                 {% endif %}
 
@@ -362,9 +360,7 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     <tbody>
         {% for r in releases %}
 
-            {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
-            {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
-            {% if  outdated_releases contains v.major_version %}
+            {% if outdated_releases contains v.major_version %}
               {% continue %}
             {% endif %}
 
@@ -423,9 +419,7 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     <tbody>
         {% for r in releases %}
 
-        {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
-        {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
-        {% if  outdated_releases contains v.major_version %}
+        {% if outdated_releases contains v.major_version %}
           {% continue %}
         {% endif %}
 
@@ -491,9 +485,7 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     <tbody>
         {% for r in releases %}
 
-            {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
-            {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
-            {% if  outdated_releases contains v.major_version %}
+            {% if outdated_releases contains v.major_version %}
               {% continue %}
             {% endif %}
 
@@ -574,9 +566,7 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     <tbody>
         {% for r in releases %}
 
-            {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
-            {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
-            {% if  outdated_releases contains v.major_version %}
+            {% if outdated_releases contains v.major_version %}
               {% continue %}
             {% endif %}
 
