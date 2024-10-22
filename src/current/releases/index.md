@@ -151,6 +151,13 @@ The following releases and their descriptions represent proposed plans that are 
 
 {% for v in versions %} {% comment %} Iterate through all major versions {% endcomment %}
 
+    {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+    {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+    {% if  outdated_releases contains v.major_version %}
+      <p style="font: red">{{ v.major_version }} MATCH</p>
+      {% continue %}
+    {% endif %}
+
     {% comment %}
       Determine if the major version is LTS and the patch component of the initial LTS patch,
       or the major version is a skippable innovation release
@@ -252,6 +259,7 @@ To learn what’s new in this release, refer to [Feature Highlights]({% link rel
         {% endfor %}
 
         {% if releases[0] %}
+
 #### {{ s }} Releases
 
 <section class="filter-content" markdown="1" data-scope="linux">
@@ -269,6 +277,13 @@ To learn what’s new in this release, refer to [Feature Highlights]({% link rel
     </thead>
     <tbody>
             {% for r in releases %}
+
+                {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+                {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+                {% if  outdated_releases contains v.major_version %}
+                  {% continue %}
+                {% endif %}
+
                 {% assign current_patch_string = '' %}
                 {% assign current_patch = nil %}
                 {% assign in_lts = false %}
@@ -346,6 +361,13 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     </thead>
     <tbody>
         {% for r in releases %}
+
+            {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+            {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+            {% if  outdated_releases contains v.major_version %}
+              {% continue %}
+            {% endif %}
+
         <tr {% if r.release_name == latest_hotfix.release_name %}class="latest"{% endif %}> {% comment %} Add "Latest" class to release if it's the latest release. {% endcomment %}
             <td>
                 <a href="{% link releases/{{ v.major_version }}.md %}#{{ r.release_name | replace: ".", "-" }}" class="binary-link">{{ r.release_name }}</a> {% comment %} Add link to each release r. {% endcomment %}
@@ -400,6 +422,13 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     </thead>
     <tbody>
         {% for r in releases %}
+
+        {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+        {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+        {% if  outdated_releases contains v.major_version %}
+          {% continue %}
+        {% endif %}
+
         <tr {% if r.release_name == latest_hotfix.release_name %}class="latest"{% endif %}> {% comment %} Add "Latest" class to release if it's the latest release. {% endcomment %}
             <td>
                 <a href="{% link releases/{{ v.major_version }}.md %}#{{ r.release_name | replace: ".", "-" }}" class="binary-link">{{ r.release_name }}</a> {% comment %} Add link to each release r. {% endcomment %}
@@ -461,6 +490,13 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     </thead>
     <tbody>
         {% for r in releases %}
+
+            {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+            {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+            {% if  outdated_releases contains v.major_version %}
+              {% continue %}
+            {% endif %}
+
             {% assign current_patch_string = '' %}
             {% assign current_patch = nil %}
             {% assign in_lts = false %}
@@ -537,6 +573,12 @@ macOS downloads are **experimental**. Experimental downloads are not yet qualifi
     </thead>
     <tbody>
         {% for r in releases %}
+
+            {% comment %} NB. v20.2 and earlier are no longer available for download/docker pull per DOC-11092 {% endcomment %}
+            {% assign outdated_releases = "v1.0,v1.1,v2.0,v2.1,v19.1,v19.2,v20.1" | split: "," %}
+            {% if  outdated_releases contains v.major_version %}
+              {% continue %}
+            {% endif %}
 
         <tr {% if r.release_name == latest_hotfix.release_name %}class="latest"{% endif %}> {% comment %} Add "Latest" class to release if it's the latest release. {% endcomment %}
             <td>
