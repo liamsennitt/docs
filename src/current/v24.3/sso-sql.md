@@ -178,6 +178,7 @@ You can also view all of your cluster settings in the DB Console.
     ~~~
 
 1. <a id="configuration-examples"></a>Instead of setting `server.jwt_authentication.jwks` to a list of static signing keys, you can set `server.server.jwt_authentication.jwks_auto_fetch.enabled` to `true` to enable automatic fetching of signing keys for the issuers specified in `server.jwt_authentication.issuers.configuration`. Signing keys are fetched from the issuer's`https://{ domain }/.well-known/openid-configuration` endpoint.
+
     Type                  | Example
     ----------------------|--------
     Single issuer URL     | `'https://accounts.google.com/'`
